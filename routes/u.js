@@ -15,8 +15,8 @@ router.get('/login', function(req, res) {
   html = template.HTML(`
     <div style= "color:red">${feedback}</div>
     <form action = "/u/login_process" method = "post">
-      <p><input type = "text" name = "email" placeholder="email">
-      <p><input type = "password" name = "pw" placeholder="password">
+      <p><input type = "text" name = "email" placeholder="이메일">
+      <p><input type = "password" name = "pw" placeholder="비밀번호">
       <p><input type = "submit" value= "로그인">
     </form>
     `)
@@ -40,10 +40,10 @@ router.get('/register', function(req, res) {
   html = template.HTML(`
     <div style= "color:red">${feedback}</div>
     <form action = "/u/register_process" method = "post">
-      <p><input type = "text" name = "email" placeholder="email"></p>
-      <p><input type = "password" name = "pwd" placeholder="password"></p>
-      <p><input type = "password" name = "pwd2" placeholder="password"></p>
-      <p><input type = "text" name= "displayName" placeholder="display name"</p>
+      <p><input type = "text" name = "email" placeholder="이메일"></p>
+      <p><input type = "password" name = "pwd" placeholder="비밀번호"></p>
+      <p><input type = "password" name = "pwd2" placeholder="비밀번호 확인"></p>
+      <p><input type = "text" name= "displayName" placeholder="별명"</p>
       <p><input type = "submit" value= "회원가입"></p>
     </form>
     `)

@@ -60,10 +60,10 @@ router.get('/', (req, res) => {
 //생성
 router.get('/create', (req,res)=>{
 
-  if(!auth.IsOwner(req,res)){
-    res.redirect('/o/notice');
-    return false;
-  }
+  // if(!auth.IsOwner(req,res)){
+  //   res.redirect('/o/notice');
+  //   return false;
+  // }
   const html = template.HTML(template.create,auth.StatusUI(req, res));
   res.send(html);
 });
