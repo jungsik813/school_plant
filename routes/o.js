@@ -22,6 +22,44 @@ var upload = multer({ storage: _storage })
 var template = require('../lib/template.js');
 var auth = require('../lib/auth');
 
+//개인별 데이터
+router.get('/user', (req, res) => {
+    if(!auth.IsOwner(req,res)){
+      res.redirect('/o/notice');
+      return false;
+    }
+    db.query('SELECT * FROM topic WHERE topic.user_id = ? ',[req.user.id], function(err, result){
+      if(err)throw err;
+      function cardList(id,title,description,imagePath){
+          return `
+              <div class="col">
+                <a href="/o/${id}">
+                  <div class="card" style="width: 15rem; margin-top: 20px;" >
+                    <img src="../${imagePath}" class="card-img-top" style= 'height:250px; ' alt="card image cap">
+                      <div class="card-body">
+                        <h5 class="card-title">${title}</h5>
+                        <p class="card-text">${description}</p>
+                      </div>
+                  </div>
+                </a>
+              </div>
+        `;
+        }
+      var card_list = '<div class="row">';
+        var i = 0;
+        while(i < result.length){
+          var o_id = result[i].id;
+          var imagePath =result[i].o_image_1;
+          var card_o_name = result[i].o_name;
+          var description = result[i].description;
+          card_list = card_list + cardList(o_id, card_o_name,description,imagePath);
+          i = i + 1;
+        }
+        var card_list = card_list + '</div>';
+        var html = template.HTML(card_list, auth.StatusUI(req, res));
+        res.send(html);
+    });
+  });
 
 // 카드 및 첫화면
 router.get('/', (req, res) => {
@@ -71,22 +109,22 @@ router.get('/create', (req,res)=>{
 
 //사진업로드시 아이디 만들어라
 router.get('/notice', (req,res) => {
-    const html = template.HTML('<a href="/o">사진을 올리려면 로그인해주세요.</a>');
+    const html = template.HTML('<a href="/o">로그인을 해야 이용가능한 서비스입니다.</a>');
     res.send(html);
 })
 
 
 //생성_과정
 router.post('/create_process', upload.array('o_image', 5), function (req, res, next) {
-  var images = []
+  let images = []
   for(i=0; i < req.files.length; i++){
     images.push(req.files[i].path.slice(7))
   }
-  db.query('INSERT INTO topic (o_name, description, created, o_image_1, o_image_2, o_image_3, o_image_4, o_image_5, user_id) VALUES (?, ?, ?, ?, ?, ? , ? , ?, ?)',
-  [req.body.o_name, req.body.o_memo, req.body.o_time, images[0], images[1], images[2], images[3], images[4], req.user.id],function(err, result){
+
+  db.query('INSERT INTO topic (o_name, description, created, o_image_1, o_image_2, o_image_3, o_image_4, o_image_5, user_id, Lat, Lng) VALUES (?, ?, ?, ?, ?, ? , ? , ?, ?, ?, ?)',
+  [req.body.o_name, req.body.o_memo, req.body.o_time, images[0], images[1], images[2], images[3], images[4], req.user.id, req.body.Lat, req.body.Lng],function(err, result){
     if(err)throw err;
   })
-
   res.redirect('/o');
 })
 

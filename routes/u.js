@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var template = require('../lib/template');
 var db = require('../lib/db');
+var fs = require('fs');
 const bcrypt = require('bcrypt');
 module.exports = function(passport){
 
@@ -14,11 +15,26 @@ router.get('/login', function(req, res) {
   }
   html = template.HTML(`
     <div style= "color:red">${feedback}</div>
-    <form action = "/u/login_process" method = "post">
-      <p><input type = "text" name = "email" placeholder="이메일">
-      <p><input type = "password" name = "pw" placeholder="비밀번호">
-      <p><input type = "submit" value= "로그인">
-    </form>
+    <div class="jumbotron">
+      <h1 class="display-4 d-flex justify-content-center text-success">로그인</h1>
+      <p class="lead d-flex justify-content-center">사진을 올리려면 먼저 로그인 하세요.</p>
+      <div class="card" style="width: 80%;margin: auto">
+      <div class="card-body">
+        <p class="card-text">
+          <form action = "/u/login_process" method = "post">
+            <div class="form-group">
+              <label for="email">이메일</label>
+              <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
+            </div>
+            <div class="form-group">
+              <label for="pw">비밀번호</label>
+              <input type="password" class="form-control" id="pw" name="pw">
+            </div>
+            <button type="submit" class="btn btn-success">로그인</button>
+          </form>
+        </p>
+      </div> 
+    </div>
     `)
   res.send(html);
 });
@@ -39,19 +55,76 @@ router.get('/register', function(req, res) {
   }
   html = template.HTML(`
     <div style= "color:red">${feedback}</div>
-    <form action = "/u/register_process" method = "post">
-      <p><input type = "text" name = "email" placeholder="이메일"></p>
-      <p><input type = "password" name = "pwd" placeholder="비밀번호"></p>
-      <p><input type = "password" name = "pwd2" placeholder="비밀번호 확인"></p>
-      <p><input type = "text" name= "displayName" placeholder="별명"</p>
-      <p><input type = "submit" value= "회원가입"></p>
-    </form>
+    <div class="jumbotron" style="Backgorundcolor:#f8f9fa;">
+      <h1 class="display-4 d-flex justify-content-center text-success">회원가입</h1>
+      <p class="lead d-flex justify-content-center">아래의 정보를 입력해주세요.</p>
+      <div class="card" style="width: 80%;margin: auto">
+      <div class="card-body">
+        <p class="card-text">
+          <form id="form_register" action = "/u/register_process" method = "post" onsubmit="return isValid()">
+            <div class="form-group">
+              <label for="email">이메일 주소</label>
+              <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" required pattern="^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$">
+              <small id="emailHelp" class="form-text text-muted">이메일 주소를 적어주세요.</small>
+            </div>
+            <div class="form-group">
+              <label for="pwd">비밀번호</label>
+              <input type="password" class="form-control" id="pwd" name="pwd" aria-describedby="pwdHelp" required pattern="^[0-9a-zA-Z]+$">
+              <small id="pwdHelp" class="form-text text-muted">'영문 대/소문자'와 '숫자'만 사용 가능합니다(특수기호 사용 불가능).</small>
+            </div>
+            <div class="form-group">
+              <label for="pwd2">비밀번호 확인</label>
+              <input type="password" class="form-control" id="pwd2" name="pwd2" aria-describedby="pwd2Help" required pattern="^[0-9a-zA-Z]+$">
+              <small id="pwd2Help" class="form-text text-muted"></small>
+            </div>
+            <div class="form-group">
+              <label for="displayName">별명</label>
+              <input type="text" class="form-control" id="displayName" name="displayName" aria-describedby="displayNameHelp" required pattern="^[0-9a-zA-z]+$">
+              <small id="displayNameHelp" class="form-text text-muted">'영문 대/소문자'와 '숫자'만 사용 가능합니다(특수기호 사용 불가능)</small>
+            </div>
+            <button type="submit" class="btn btn-success">회원가입</button>
+          </form>
+        </p>
+      </div> 
+    </div>
+
+    <script>
+      function isValid(){
+        var form_register = document.getElementById('form_register');
+        var pwd1 = form_register.pwd.value;
+        var pwd2 = form_register.pwd2.value;
+        var pw1_regex = /^[0-9a-zA-z]+$/;
+
+        if(!pw1_regex.test(pwd1)){
+          var pwdHelp = document.getElementById('pwdHelp');
+          pwdHelp.classList.remove('text-muted');
+          pwdHelp.classList.add('text-danger');
+          pwdHelp.style.fontWeight = "bold";
+          return false;
+        }
+
+        if(pwd1 !== pwd2){
+          var pwd2Help = document.getElementById('pwd2Help');
+          pwd2Help.innerHTML = "비밀번호가 일치하지 않습니다.";
+          pwd2Help.classList.remove('text-muted');
+          pwd2Help.classList.add('text-danger');
+          pwd2Help.style.fontWeight = "bold";
+          return false;
+
+        };
+        return true;
+      }
+    </script>
     `)
   res.send(html);
 });
 
 //회원가입 과정 각종 검증이 필요하다.(ex. email들어가서 인증을 받아야 권한 풀어주기, 중복되는 아이디 있는가 검증)
 router.post('/register_process', function (req, res, next) {
+  fs.writeFile('test.txt', req.body.email, function(err){
+    if (err) return console.log(err);
+    console.log(req.body);
+  });
   var email =req.body.email;
   var pwd = req.body.pwd;
   var pwd2 = req.body.pwd2;
@@ -59,7 +132,8 @@ router.post('/register_process', function (req, res, next) {
   if(pwd !== pwd2){
     req.flash('error', '비밀번호가 같지 않습니다.')
     res.redirect('/u/register');
-  }else{
+  }
+  else{
     bcrypt.hash(pwd, 10, function (err, hash){
       db.query('INSERT INTO user (email, pwd, displayName) VALUES(?, ?, ?)',[email, hash, displayName], function(err, result){
         if(err) throw err;
